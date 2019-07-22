@@ -1,0 +1,31 @@
+1.Eureka客户端调用方在调用Eureka客户端服务提供时后台经常会抛出：feign.RetryableException: Read timed out executing POST
+
+解决方法:
+在你的yml文件中添加
+#在这里为了方便测试超时熔断处理，如果不添加很难测试，因为会抛出Read timed out
+ribbon:
+  #请求处理的超时时间，指的是建立连接后从服务器读取到可用资源所用的时间， Eureka服务调用方从Eureka服务提供方读资源的时间
+  ReadTimeout: 60000
+  #请求连接的超时时间,Eureka客户端服务提供方与Eureka客户端服务调用方建立连接所用时间
+  ConnectTimeout: 60000
+
+
+ConnectTimeout和ReadTimeout所代表的意义
+
+ConnectTimeout
+指的是建立连接所用的时间，适用于网络状况正常的情况下，两端连接所用的时间。
+在java中，网络状况正常的情况下，例如使用HttpClient或者HttpURLConnetion连接时设置参数connectTimeout=5000即5秒，
+如果连接用时超过5秒就是抛出java.net.SocketException: connetct time out的异常。
+
+ReadTimeout
+指的是建立连接后从服务器读取到可用资源所用的时间。
+在这里我们可以这样理解ReadTimeout：正常情况下，当我们发出请求时可以收到请求的结果，也就是页面上展示的内容，
+但是当网络状况很差的时候，就会出现页面上无法展示出内容的情况。另外当我们使用爬虫或者其他全自动的程序时，无法判断当前的网络状况是否良好，
+此时就有了ReadTimeout的用武之地了，通过设置ReadTimeout参数，例：ReadTimeout=5000，超过5秒没有读取到内容时，
+就认为此次读取不到内容并抛出Java.net.SocketException: read time out的异常。
+
+
+
+参考：
+ConnectTimeout和ReadTimeout所代表的意义
+https://blog.csdn.net/Mlong54/article/details/78831251
